@@ -181,13 +181,10 @@ PERL_ARCHIVE       =
 PERL_ARCHIVE_AFTER = 
 
 
-TO_INST_PM = import.pl \
-	lib/Local/GetterSetter.pm
+TO_INST_PM = lib/Local/GetterSetter.pm
 
 PM_TO_BLIB = lib/Local/GetterSetter.pm \
-	blib/lib/Local/GetterSetter.pm \
-	import.pl \
-	$(INST_LIB)/Local/import.pl
+	blib/lib/Local/GetterSetter.pm
 
 
 # --- MakeMaker platform_constants section:
@@ -439,22 +436,22 @@ clean_subdirs :
 
 clean :: clean_subdirs
 	- $(RM_F) \
-	  tmon.out *$(OBJ_EXT) \
-	  $(BASEEXT).exp perl.exe \
-	  pm_to_blib.ts core \
-	  core.[0-9] core.*perl.*.? \
-	  blibdirs.ts MYMETA.json \
-	  MYMETA.yml core.[0-9][0-9][0-9][0-9] \
-	  core.[0-9][0-9][0-9] $(BASEEXT).bso \
-	  lib$(BASEEXT).def perl$(EXE_EXT) \
-	  $(BASEEXT).x $(MAKE_APERL_FILE) \
-	  core.[0-9][0-9] perlmain.c \
-	  *perl.core *$(LIB_EXT) \
-	  mon.out so_locations \
-	  $(INST_ARCHAUTODIR)/extralibs.all perl \
-	  pm_to_blib $(BOOTSTRAP) \
-	  core.[0-9][0-9][0-9][0-9][0-9] $(BASEEXT).def \
-	  $(INST_ARCHAUTODIR)/extralibs.ld 
+	  tmon.out MYMETA.json \
+	  core core.[0-9][0-9][0-9] \
+	  lib$(BASEEXT).def $(BASEEXT).def \
+	  core.[0-9] MYMETA.yml \
+	  $(MAKE_APERL_FILE) $(BASEEXT).bso \
+	  core.[0-9][0-9][0-9][0-9] so_locations \
+	  blibdirs.ts $(INST_ARCHAUTODIR)/extralibs.all \
+	  pm_to_blib $(BASEEXT).x \
+	  core.[0-9][0-9][0-9][0-9][0-9] $(INST_ARCHAUTODIR)/extralibs.ld \
+	  $(BASEEXT).exp *perl.core \
+	  perl$(EXE_EXT) perl.exe \
+	  mon.out pm_to_blib.ts \
+	  *$(LIB_EXT) $(BOOTSTRAP) \
+	  perl perlmain.c \
+	  *$(OBJ_EXT) core.*perl.*.? \
+	  core.[0-9][0-9] 
 	- $(RM_RF) \
 	  blib 
 	- $(MV) $(FIRST_MAKEFILE) $(MAKEFILE_OLD) $(DEV_NULL)
@@ -469,7 +466,7 @@ realclean_subdirs :
 # Delete temporary files (via clean) and also delete dist files
 realclean purge ::  clean realclean_subdirs
 	- $(RM_F) \
-	  $(MAKEFILE_OLD) $(FIRST_MAKEFILE) 
+	  $(FIRST_MAKEFILE) $(MAKEFILE_OLD) 
 	- $(RM_RF) \
 	  $(DISTVNAME) 
 
@@ -797,7 +794,6 @@ subdirs-test ::
 
 test_dynamic :: pure_all
 	PERL_DL_NONLAZY=1 $(FULLPERLRUN) "-MExtUtils::Command::MM" "-e" "test_harness($(TEST_VERBOSE), '$(INST_LIB)', '$(INST_ARCHLIB)')" $(TEST_FILES)
-	PERL_DL_NONLAZY=1 $(FULLPERLRUN) "-I$(INST_LIB)" "-I$(INST_ARCHLIB)" $(TEST_FILE)
 
 testdb_dynamic :: pure_all
 	PERL_DL_NONLAZY=1 $(FULLPERLRUN) $(TESTDB_SW) "-I$(INST_LIB)" "-I$(INST_ARCHLIB)" $(TEST_FILE)
@@ -825,8 +821,7 @@ ppd :
 
 pm_to_blib : $(FIRST_MAKEFILE) $(TO_INST_PM)
 	$(NOECHO) $(ABSPERLRUN) -MExtUtils::Install -e 'pm_to_blib({@ARGV}, '\''$(INST_LIB)/auto'\'', q[$(PM_FILTER)], '\''$(PERM_DIR)'\'')' -- \
-	  lib/Local/GetterSetter.pm blib/lib/Local/GetterSetter.pm \
-	  import.pl $(INST_LIB)/Local/import.pl 
+	  lib/Local/GetterSetter.pm blib/lib/Local/GetterSetter.pm 
 	$(NOECHO) $(TOUCH) pm_to_blib
 
 
