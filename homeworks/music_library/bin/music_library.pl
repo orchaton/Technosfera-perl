@@ -17,7 +17,7 @@ require "$FindBin::Bin/../lib/Local/PrepareForPrint.pm";
 my %keys = %{Local::PathParser::getExecOptions()};
 
 # Чтение музыкальной библиотеки
-my @lib = @{Local::PathParser::makeLib()};
+my @lib = @{Local::PathParser::parse()};
 
 # Фильтрация библиотки по ключам
 my @filtered_lib = @{Local::FilterSort::filterLib(\@lib, \%keys)};
@@ -32,4 +32,4 @@ my @ready_lib = @{Local::PrepareForPrint::makeList(\@sorted_lib, $keys{columns})
 my @required_space = @{Local::PrepareForPrint::necessarySpace(\@ready_lib, scalar(@{$keys{columns}}))};
 
 # Вывод библиотеки на экран
-TablePrint::printLib(\@ready_lib, \@required_space);
+Local::TablePrint::printLib(\@ready_lib, \@required_space);
