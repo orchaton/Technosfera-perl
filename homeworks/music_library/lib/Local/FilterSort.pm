@@ -32,16 +32,21 @@ sub filterLib {
 	my @necessary_keys = grep {defined($keys->{$_}) and $_ ne 'sort' and $_ ne 'columns'} keys %$keys;	
 	my @filtered_lib;
 	
+	sub num_comparator { my ($a, $b) = @_; return $a != $b; }
+	sub str_comparator { my ($a, $b) = @_; return $a ne $b; }
+
+	my $comparators = {	year => \&num_comparator,
+						band => \&str_comparator,
+						album => \&str_comparator,
+						track => \&str_comparator,
+						format => \&str_comparator
+						};
+	
 	for my $node (@$lib) {
 		
 		my $f = 1;                                            # flag garanties that all keys were passed
 		for my $key (@necessary_keys) {
-
-			if ($key eq 'year') {
-				undef $f if ($node->{$key} != $keys->{$key});
-			} else {
-				undef $f if ($node->{$key} ne $keys->{$key});
-			}
+			$f = 0 if $comparators->{$key} ($node->{$key}, $keys->{$key});
 		}
 		push @filtered_lib, $node if $f;
 	}
