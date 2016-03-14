@@ -3,6 +3,8 @@ package Local::FilterSort;
 use strict;
 use warnings;
 
+use List::Util;
+
 =encoding utf8
 
 =head1 NAME
@@ -26,14 +28,23 @@ our $VERSION = '1.00';
 # Функция возвращает указатель на массив хешей (отфильтрованная библиотека)
 sub filterLib {
 	my ($lib, $keys) = @_;
+
+	my @necessary_keys = grep {defined($keys->{$_}) and $_ ne 'sort' and $_ ne 'columns'} keys %$keys;	
+	my @filtered_lib;
 	
-	my @filtered_lib = grep {
-	(($keys->{band}   && $_->{band}   eq $keys->{band})   || not defined $keys->{band})  and 
-	(($keys->{album}  && $_->{album}  eq $keys->{album})  || not defined $keys->{album}) and 
-	(($keys->{year}   && $_->{year}   == $keys->{year})   || not defined $keys->{year})  and    # 'cause {year} is number
-	(($keys->{track}  && $_->{track}  eq $keys->{track})  || not defined $keys->{track}) and
-	(($keys->{format} && $_->{format} eq $keys->{format}) || not defined $keys->{format})
-	} @$lib;
+	for my $node (@$lib) {
+		
+		my $f = 1;                                            # flag garanties that all keys were passed
+		for my $key (@necessary_keys) {
+
+			if ($key eq 'year') {
+				undef $f if ($node->{$key} != $keys->{$key});
+			} else {
+				undef $f if ($node->{$key} ne $keys->{$key});
+			}
+		}
+		push @filtered_lib, $node if $f;
+	}
 
     return \@filtered_lib;
 }
