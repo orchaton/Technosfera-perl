@@ -23,6 +23,10 @@ our $VERSION = '1.00';
 
 =cut
 
+# Немного компараторов:
+sub num_comparator { my ($a, $b) = @_; return $a != $b; }
+sub str_comparator { my ($a, $b) = @_; return $a ne $b; }
+
 # Функция фильтрует музыкальную библиотеку (массив хешей) согласно ключам указанным в хеше %keys
 # Функция принимает указатель на массив хешей (библиотеку музыки) и указатель на %keys
 # Функция возвращает указатель на массив хешей (отфильтрованная библиотека)
@@ -31,9 +35,6 @@ sub filterLib {
 
     my @necessary_keys = grep {defined($keys->{$_}) and $_ ne 'sort' and $_ ne 'columns'} keys %$keys;    
     my @filtered_lib;
-    
-    sub num_comparator { my ($a, $b) = @_; return $a != $b; }
-    sub str_comparator { my ($a, $b) = @_; return $a ne $b; }
 
     my $comparators = { year => \&num_comparator,
                         band => \&str_comparator,
