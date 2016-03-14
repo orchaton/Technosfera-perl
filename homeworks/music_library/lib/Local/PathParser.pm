@@ -68,7 +68,7 @@ sub parse {
 		my ($track, $format) = split m[\.], $str[3]; 
 
 		chop($year);
-		$album =~ s/\s//g;
+		$album =~ s/\s//;
 
 		my %node = (band => $band, 
 		            year => $year, 
