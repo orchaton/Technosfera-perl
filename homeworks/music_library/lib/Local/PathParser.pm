@@ -4,6 +4,9 @@ use strict;
 use warnings;
 use Getopt::Long;
 
+use feature 'say';
+use Data::Dumper;
+
 =encoding utf8
 
 =head1 NAME
@@ -52,36 +55,20 @@ sub getExecOptions {
 }
 
 # Функция читает из входного потока строки вида ./<band>/<year> - <album>/<track>.<format>
-# Функция преобразует входные строки к массиву массивов лексем.
+# Функция преобразует входные строки к массиву хешей.
 sub parse {
-	my @data;
+	my @lib;
 
 	while (my $arg = <>) {
 		chomp $arg;
-		my @str = split m{[\.\/\-]}, $arg;
+		my @str = split m[\/], $arg;
 
-		for (my $i = 0; $i <= $#str; $i++) {
-			if ($str[$i] eq '') {
-				splice @str, $i, 1;			# Kill empty strings (after split, $str[0] and $str[1] is empty)
-				$i--;
-			}
-		}
+		my $band = $str[1];
+		my ($year, $album) = split m[\-], $str[2];
+		my ($track, $format) = split m[\.], $str[3]; 
 
-		chop $str[1];						# Kill last \s in 'year'-string
-		$str[2] =~ s/\s//;					# Kill first \s in 'album'-string
-
-		push @data, \@str;
-	}
-	return \@data;
-}
-
-# Функция возвращает музыкальную библиотеку в формате указателя на массив хешей.
-sub makeLib {
-	my @data = @{parse()};
-	
-	my @lib;
-	for my $str (@data) {
-		my ($band, $year, $album, $track, $format) = @$str;
+		chop($year);
+		$album =~ s/\s//g;
 
 		my %node = (band => $band, 
 		            year => $year, 
@@ -89,6 +76,7 @@ sub makeLib {
 		            track => $track, 
 		            format => $format
 		            );
+		
 		push @lib, \%node;
 	}
 	return \@lib;
