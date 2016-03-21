@@ -19,6 +19,40 @@ no warnings 'experimental';
 use feature 'say';
 use DDP;
 
+sub parse_str {
+	$_ = shift;
+	chop;				# delete last "
+	s/"//;				# delete first "
+
+	s/\\n/\n/g;
+	s/\\t/\t/g;
+	s/\\b/\b/g;
+	s/\\f/\f/g;
+	s/\\r/\r/g;
+
+	s/\\u([0-9a-fA-F]{4})/chr(hex($1))/ge;
+	return $_;
+}
+
+sub parse_num {
+	$_ = shift;
+	return (0+$_);
+}
+
+sub parse_var {
+	$_ = shift;
+	if (/^false$/sg) {
+		return "";
+	}
+	if (/^true$/sg) {
+		return 1;
+	}
+	if (/^null$/sg) {
+		return undef;
+	}
+	0;
+}
+
 sub parse_json {
 	my $source = shift;	
 	my $num = qr/
@@ -37,37 +71,26 @@ sub parse_json {
 		)*
 		\"										# end of string
 	/x;
+	my $var = qr/(?:true|false|null)/;
 
 	my $separators = qr/[:,]/;
 	my $brackets = qr/[\{\}\[\]]/;
 
-	# Easy parse:
-	given ($source) {
-		when (/^false$/sg) {
-			return "";
-		}
-		when (/^true$/sg) {
-			return 1;
-		}
-		when (/^null$/sg) {
-			return undef;
-		}
-		when (/^$num$/sg) {
-			return (0+$_);
-		}
-		when (/^$str$/sg) {
-			chop;				# delete last "
-			s/"//;				# delete first "
+	my %smart_patterns = (
+		number => \{pattern => $num, parser => \&parse_num},
+		string => \{pattern => $str, parser => \&parse_str},
+		var    => \{pattern => $var, parser => \&parse_var}
+		);
 
-			s/\\n/\n/g;
-			s/\\t/\t/g;
-			s/\\b/\b/g;
-			s/\\f/\f/g;
-			s/\\r/\r/g;
-			s/\\u([0-9a-fA-F]{4})/chr(hex($1))/ge;
-			return $_;
+	# Easy parsers:
+	for (values %smart_patterns) {
+		if ($source =~ /^${$$_}{pattern}$/sg) {
+			return ${$$_}{parser}($source);
 		}
 	}
+
+	# Recursive parsers:
+	
 
 
 	# use JSON::XS;
