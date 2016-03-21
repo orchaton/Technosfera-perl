@@ -7,6 +7,8 @@ use base qw(Exporter);
 our @EXPORT_OK = qw( parse_json );
 our @EXPORT = qw( parse_json );
 
+use Encode;
+
 BEGIN{
 	if ($] < 5.018) {
 		package experimental;
@@ -35,7 +37,7 @@ sub parse_json {
 		)*
 		\"										# end of string
 	/x;
-	
+
 	my $separators = qr/[:,]/;
 	my $brackets = qr/[\{\}\[\]]/;
 
@@ -62,6 +64,7 @@ sub parse_json {
 			s/\\b/\b/g;
 			s/\\f/\f/g;
 			s/\\r/\r/g;
+			s/\\u([0-9a-fA-F]{4})/chr(hex($1))/ge;
 			return $_;
 		}
 	}
@@ -72,11 +75,12 @@ sub parse_json {
 	return {};
 }
 
-p parse_json('"М\rоя ст\tро\tк\tа!\b\n"');
+p parse_json('"Моя\tстрока!\n\u0048"');
 p parse_json('true');
 p parse_json('false');
 p parse_json('null');
 p parse_json('-1.23E-3');
+
 
 
 1;
