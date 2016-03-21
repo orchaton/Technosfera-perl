@@ -1,16 +1,24 @@
 package Local::JSONParser;
 
+use 5.010;
 use strict;
 use warnings;
 use base qw(Exporter);
 our @EXPORT_OK = qw( parse_json );
 our @EXPORT = qw( parse_json );
 
+BEGIN{
+	if ($] < 5.018) {
+		package experimental;
+		use warnings::register;
+	}
+}
+no warnings 'experimental';
 use feature 'say';
+use DDP;
 
 sub parse_json {
-	my $source = shift;
-	
+	my $source = shift;	
 	my $num = qr/
 		\-?										# unary
 		(?:[1-9]\d*|0)							# integer part
@@ -27,19 +35,36 @@ sub parse_json {
 		)*
 		\"										# end of string
 	/x;
+	
+	my $separators = qr/[:,]/;
+	my $brackets = qr/[\{\}\[\]]/;
 
-	my $var = qr/(?:true|false|null)/;
+	# Easy parse:
+	given ($source) {
+		when (/^false$/sg) {
+			return "";
+		}
+		when (/^true$/sg) {
+			return 1;
+		}
+		when (/^null$/sg) {
+			return undef;
+		}
+		when (/^$num$/sg) {
+			return (0+$_);
+		}
+		when (/^$str$/sg) {
+			chop;				# delete last "
+			s/"//;				# delete first "
 
-	if ($source =~ /^$num$/g) {
-		say 'This is number';
-	} elsif ($source =~ /^$str$/g) {
-		say 'This is string';
-	} elsif ($source =~ /^$var$/g) {
-		say 'This is var';
-	} else {
-		say 'This is unmatchable';
+			s/\\n/\n/g;
+			s/\\t/\t/g;
+			s/\\b/\b/g;
+			s/\\f/\f/g;
+			s/\\r/\r/g;
+			return $_;
+		}
 	}
-
 
 
 	# use JSON::XS;
@@ -47,6 +72,11 @@ sub parse_json {
 	return {};
 }
 
-parse_json('""');
+p parse_json('"М\rоя ст\tро\tк\tа!\b\n"');
+p parse_json('true');
+p parse_json('false');
+p parse_json('null');
+p parse_json('-1.23E-3');
+
 
 1;

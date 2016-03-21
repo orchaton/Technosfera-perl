@@ -1,5 +1,6 @@
 My ToDo:
   ✔ Write number pattern from <json.org>  @done (16-03-21 18:27)
   ☐ Write tests for number @created @today @d(+2)(16-03-21 11:50)
-  ☐ Write string pattern form <json.org>
-  ☐ Write tests for string @created @today 
+  ✔ Write string pattern form <json.org> @done (16-03-21 18:44)
+  ☐ Write tests for string @created @today
+  ✔ Write Easy Parse @done (16-03-21 19:08)
