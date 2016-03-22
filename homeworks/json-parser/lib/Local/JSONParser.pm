@@ -10,6 +10,11 @@ our @EXPORT = qw( parse_json );
 use Encode;
 use utf8;
 
+binmode(STDOUT,':utf8');
+
+# use Local::JSONEasyParser;
+use JSONEasyParser;
+
 BEGIN{
     if ($] < 5.018) {
         package experimental;
@@ -20,119 +25,64 @@ no warnings 'experimental';
 use feature 'say';
 use DDP;
 
-sub parse_str {
-    $_ = shift;
-    chop;                # delete last "
-    s/"//;               # delete first "
-
-    s/\\n/\n/g;
-    s/\\t/\t/g;
-    s/\\b/\b/g;
-    s/\\f/\f/g;
-    s/\\r/\r/g;
-
-    s/\\u([0-9a-fA-F]{4})/chr(hex($1))/ge;
-    return $_;
-}
-
-sub parse_num {
-    $_ = shift;
-    return (0+$_);
-}
-
-sub parse_var {
-    $_ = shift;
-    if (/^false$/sg) {
-        return "";
-    }
-    if (/^true$/sg) {
-        return 1;
-    }
-    if (/^null$/sg) {
-        return undef;
-    }
-    0;
-}
-
 sub parse_json {
-    my $source = shift;    
-    my $num = qr/
-        \-?                                       # unary
-        (?:[1-9]\d*|0)                            # integer part
-        (?:\.\d+)?                                # fixed float part
-        (?:[eE][\+-]?\d+)?                        # eE float part
-    /x;
+	sub parse {
+	    my $source = shift;
 
-    my $str = qr/
-        \"                                        # begin of string
-        (?:
-        [^"\\]                                    # unicode char except \" and \\
-        |
-        \\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})        # controlling symbols
-        )*
-        \"                                        # end of string
-    /x;
-    my $var = qr/(?:true|false|null)/;
+	    # Easy parsers:
+	    my %patterns = %{smart_patterns()}; 
+	    for (values %patterns) {
+	        if ($source =~ /^(${$$_}{pattern})(.*)/sg) {
+	            return wantarray ? (${$$_}{parser}($1), $2) : ${$$_}{parser}($1);
+	        }
+	    }
+	    # Hash parser:
+	    if ($source =~ /\G\s*\{\s*(.*)/sgc) {
+	        my %h;
+	        $source = $1;
+	        while ($source =~ /\w/sg){
+	            my $key; my $val;
 
-    my %smart_patterns = (
-        number => \{pattern => $num, parser => \&parse_num},
-        string => \{pattern => $str, parser => \&parse_str},
-        var    => \{pattern => $var, parser => \&parse_var}
-        );
+	            ($key, $source) = parse($source);
 
-    # Easy parsers:
-    for (values %smart_patterns) {
-        if ($source =~ /^(${$$_}{pattern})(.*)/sg) {
-            return wantarray ? (${$$_}{parser}($1), $2) : ${$$_}{parser}($1);
-        }
-    }
+	            $source =~ s/\s*:\s*//;
 
-    # Hash parser:
-    if ($source =~ /\G\s*\{\s*(.*)/sgc) {
-        my %h;
-        $source = $1;
-        while ($source =~ /\w/sg){
+	            ($val, $source) = parse($source);
 
-            my $key;
-            my $val;
-            ($key, $source) = parse_json($source);
+	            $h{$key} = $val;
 
-            $source =~ s/\s*:\s*//;
+	            $source =~ s/^\s*,\s*//;
+	            if ($source =~ s/^\s*\}//) {
+	                last;
+	            }
+	        }
+	        return wantarray ? (\%h, $source) : \%h;
+	    }
+	    # Array parser:
+	    if ($source =~ /\G\s*\[\s*(.*)/sgc) {
+	        my @arr;
+	        $source = $1;
+	        while ($source =~ /\w/sg) {
+	            my $val;
 
-            ($val, $source) = parse_json($source);
-            
-            $h{$key} = $val;
+	            ($val, $source) = parse($source);
 
-            $source =~ s/^\s*,\s*//;
-            if ($source =~ s/^\s*\}//) {
-                last;
-            }
-        }
-        return wantarray ? (\%h, $source) : \%h;
-    }
+	            push @arr, $val;
 
-    # Array parser:
-    if ($source =~ /\G\s*\[\s*(.*)/sgc) {
-        my @arr;
+	            $source =~ s/^\s*,\s*//;
+	            if ($source =~ s/^\s*\]//) {	# Undefined behavior
+	                last;
+	            }
+	        }
+	        return wantarray ? (\@arr, $source) : \@arr;
+	    }
+	    return {};
+	}
 
-        $source = $1;
-        while ($source =~ /\w/sg){
+	my $source = shift;
+	my ($res, $str) = parse($source);
 
-            my $val;
-            ($val, $source) = parse_json($source);
-
-            push @arr, $val;
-
-            $source =~ s/^\s*,\s*//;
-            if ($source =~ s/^\s*\]//) {
-                last;
-            }
-        }
-        return wantarray ? (\@arr, $source) : \@arr
-    }
-
-    
-    return {};
+	return $res;
 }
 
 sub parse_json_xs {
@@ -147,12 +97,21 @@ sub parse_json_xs {
 # p parse_json('false');
 # p parse_json('null');
 # p parse_json('-1.23E-3');
+# p parse_json('[ "key1", "val1", { "key1" : "val1", "key2": 2.3e+2 }, 2.3e+2 ]');
+# p parse_json('{ "key1": "string value", "key2": -3.1415, "key3": ["nested array"], "key4": { "nested": "object" } }');
+# p parse_json_xs('{ "key1": "string value", "key2": -3.1415, "key3": ["nested array"], "key4": { "nested": "object" } }');
 
-my $str = '[   "key1" , "val1", {   "key1" : "val1", "key2": 2.3e+2  }, 2.3e+2  ]';
+# my $hard = qq/ { "key1":\n"string value",\n"key2":\n-3.1415,\n"key3"\n: ["nested array"],\n"key4"\n:\n{"nested":"object"}}/;
+# p parse_json($hard);
+# p parse_json_xs($hard);
 
-my $ref = parse_json($str);
-p $ref;
+# my $bad = '[{ [{]} }]';
 
-p parse_json_xs($str);
+# p parse_json($bad);
+# p parse_json_xs($bad);
+
+my $t = '[{ "a":[ "\t\u0451\",","\"," ] }]';
+p parse_json($t);
+p parse_json_xs($t);
 
 1;
