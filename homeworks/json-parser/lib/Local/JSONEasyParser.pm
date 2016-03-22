@@ -1,4 +1,4 @@
-package JSONEasyParser;
+package Local::JSONEasyParser;
 
 use 5.010;
 use strict;
