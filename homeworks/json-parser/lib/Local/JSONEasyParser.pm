@@ -20,8 +20,8 @@ no warnings 'experimental';
 
 sub parse_str {
     $_ = shift;
-    chop;                # delete last "
-    s/"//;               # delete first "
+    s/"$//;
+    s/^"//;
 
     s/\\n/\n/g;
     s/\\t/\t/g;
