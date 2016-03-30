@@ -14,11 +14,9 @@ for (1..$clients) {
 }
 
 my $cnt = 0;
-until ( (my $pid = waitpid(-1, WNOHANG)) == -1 ) {
-	if ($pid) {
-		say "Done $cnt/$clients";
-		$cnt++;
-	}
+until ( (my $pid = waitpid(-1, 0)) == -1 ) {
+	say "Done $cnt/$clients";
+	$cnt++;
 }
 
 say "DDOS Done.";

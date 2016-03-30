@@ -102,7 +102,7 @@ sub mainframe {
 	}
 
 	wait_clients();
-	exit;
+	exit (0);
 }
 
 sub serve_client {

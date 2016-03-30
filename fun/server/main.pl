@@ -23,7 +23,7 @@ $| = 1;
 use v5.018;
 
 my $server = IO::Socket::INET->new(
-    LocalPort  => 9000,
+    LocalPort  => 7000,
     Type       => SOCK_STREAM,
     Reuse_Addr => 1,
     Listen     => 2
@@ -36,7 +36,7 @@ unless (-e -p 'storage.pipe') {
 	mkfifo('storage.pipe', 0700) or die "mkfifo: $!";
 }
 
-my $max_client = 50;
+my $max_client = defined $ARGV[0] ? $ARGV[0] : 50;
 
 my $glue = 'scalar_glue';
 my %options = (

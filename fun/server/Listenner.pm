@@ -48,7 +48,13 @@ sub new_mainframe {
     unless (fork()) {
     	mainframe($server, \@client_queue, $glue, $max_client, $LOG);
     	exit;
-	}        
+	}
+
+	# closing openning sockets:
+	for (@client_queue) {
+		say "Listenner: closing $_";
+		close($_);
+	}
 }
 
 sub alrm_handler {
