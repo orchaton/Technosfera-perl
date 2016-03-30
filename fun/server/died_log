@@ -1,0 +1,138 @@
+Listenner: tie 0
+Listenner: serever started: 10499
+Listenner: max_client = 5
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d1878)
+Listenner: start the clock
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d19f8)
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d1b78)
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d1c38)
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d1cf8)
+Listenner: stop the clock
+Listenner: push 5
+Listenner: push 5
+[
+    [0] *Symbol::GEN1  (read/write, layers: unix perlio),
+    [1] *Symbol::GEN2  (read/write, layers: unix perlio),
+    [2] *Symbol::GEN3  (read/write, layers: unix perlio),
+    [3] *Symbol::GEN4  (read/write, layers: unix perlio),
+    [4] *Symbol::GEN5  (read/write, layers: unix perlio),
+    [5] undef
+]
+Mainframe(10532): Client's Queue connected. Amount = 6
+Mainframe(10532): Busy: 0 clients
+Mainframe(10532)::serve: Client openned 10534
+Mainframe(10532)::serve: Client openned 10533
+Mainframe(10532)::serve: client (undef) closed: 10533
+Mainframe(10532)::serve: client closed: 10534
+Mainfram(10533): now $client_count = 3
+Mainframe(10532)::serve: Client openned 10535
+Mainfram(10534): now $client_count = 2
+Mainframe(10532)::serve: client closed: 10535
+Mainframe(10532)::serve: Client openned 10536
+Mainframe(10532): dying... Clients: 4
+Mainframe(10532)::serve: client closed: 10536
+Mainfram(10535): now $client_count = 2
+Mainframe(10532)::serve: Client openned 10537
+Mainframe(10532)::serve: client closed: 10537
+Mainfram(10536): now $client_count = 2
+Mainframe(10532)::serve: Client openned 10538
+Mainfram(10537): now $client_count = 1
+Mainframe(10532)::serve: client closed: 10538
+Mainfram(10538): now $client_count = 0
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d1d70)
+Listenner: start the clock
+Mainframe(10532): so now I'm dead
+
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d1de8)
+Listenner: new Connection IO::Socket::INET=GLOB(0x247e678)
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d1b60)
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d1c20)
+Listenner: stop the clock
+Listenner: push 5
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d1c68)
+Listenner: start the clock
+Listenner: push 5
+[
+    [0] *Symbol::GEN6  (read/write, layers: unix perlio),
+    [1] *Symbol::GEN7  (read/write, layers: unix perlio),
+    [2] *Symbol::GEN8  (read/write, layers: unix perlio),
+    [3] *Symbol::GEN9  (read/write, layers: unix perlio),
+    [4] *Symbol::GEN10  (read/write, layers: unix perlio),
+    [5] undef
+]
+Mainframe(10539): Client's Queue connected. Amount = 6
+Mainframe(10539): Busy: 0 clients
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d1e18)
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d1db8)
+Listenner: stop the clock
+Listenner: push 3
+Listenner: new Connection IO::Socket::INET=GLOB(0x27d1d88)
+Listenner: start the clock
+Listenner: new Connection IO::Socket::INET=GLOB(0x2526520)
+Mainframe(10539)::serve: Client openned 10540
+Mainframe(10539)::serve: client (undef) closed: 10540
+Mainframe(10539)::serve: Client openned 10541
+Mainframe(10539)::serve: client closed: 10541
+Listenner: push 3
+Mainframe(10539)::serve: Client openned 10543
+Mainframe(10539)::serve: client closed: 10543
+Mainfram(10540): now $client_count = 3
+Mainframe(10539)::serve: Client openned 10544
+[
+    [0] *Symbol::GEN11  (read/write, layers: unix perlio),
+    [1] *Symbol::GEN12  (read/write, layers: unix perlio),
+    [2] *Symbol::GEN13  (read/write, layers: unix perlio),
+    [3] undef
+]
+Mainframe(10539)::serve: client closed: 10544
+Mainframe(10542): Client's Queue connected. Amount = 4
+Mainfram(10541): now $client_count = 2
+Mainframe(10542): Busy: 2 clients
+Mainfram(10543): now $client_count = 1
+Mainfram(10544): now $client_count = 1
+Mainframe(10542)::serve: Client openned 10546
+Mainframe(10542)::serve: Client openned 10549
+Mainframe(10539)::serve: Client openned 10545
+Mainframe(10539)::serve: client closed: 10545
+Mainframe(10539)::serve: Client openned 10548
+Mainframe(10542)::serve: Client openned 10547
+Mainframe(10542)::serve: client (undef) closed: 10546
+Mainframe(10539): dying... Clients: 5
+Mainfram(10545): now $client_count = 3
+Mainframe(10542)::serve: client closed: 10547
+Mainframe(10542)::serve: client closed: 10549
+Mainfram(10546): now $client_count = 4
+Mainframe(10542): dying... Clients: 4
+Mainframe(10539)::serve: client closed: 10548
+Mainfram(10547): now $client_count = 2
+Mainfram(10549): now $client_count = 2
+Mainfram(10548): now $client_count = 1
+Mainframe(10542)::serve: Client openned 10550
+Mainframe(10542)::serve: client closed: 10550
+Mainfram(10550): now $client_count = 0
+Mainframe(10539): so now I'm dead
+
+Mainframe(10542): so now I'm dead
+
+Listenner: Alarm!
+Listenner: alarm push 2
+Listenner: Alarm: at the end
+Listenner: alarm push 2
+Listenner stopped: Неприменимый к данному устройству ioctl 
+
+[
+    [0] *Symbol::GEN14  (read/write, layers: unix perlio),
+    [1] *Symbol::GEN15  (read/write, layers: unix perlio)
+]
+Mainframe(10551): Client's Queue connected. Amount = 2
+Mainframe(10551): Busy: 0 clients
+Mainframe(10551): dying... Clients: 2
+Mainframe(10551)::serve: Client openned 10553
+Mainframe(10551)::serve: Client openned 10552
+Mainframe(10551)::serve: client closed: 10553
+Mainfram(10553): now $client_count = 1
+Mainframe(10551)::serve: client closed: 10552
+Mainfram(10552): now $client_count = 0
+Mainframe(10551): so now I'm dead
+
+[Finished in 4.5s]
