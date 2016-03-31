@@ -7,7 +7,7 @@ use feature 'say';
 
 my $socket = IO::Socket::INET->new(
 	PeerAddr => 'localhost',
-	PeerPort => 7000,
+	PeerPort => 9000,
 	Proto => "tcp",
 	Type => SOCK_STREAM)
 or die "Can`t connect to localhost: $@ $/";

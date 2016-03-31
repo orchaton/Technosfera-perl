@@ -22,8 +22,15 @@ $| = 1;
 
 use v5.018;
 
+$SIG{INT} = sub {
+	say "Me($$): I catch Interraption";
+	until (waitpid(-1, 0) == -1) {}
+	say "Me($$): Interrapted";
+	exit(0);
+};
+
 my $server = IO::Socket::INET->new(
-    LocalPort  => 7000,
+    LocalPort  => 9000,
     Type       => SOCK_STREAM,
     Reuse_Addr => 1,
     Listen     => 2
@@ -67,3 +74,5 @@ until ( (my $res = waitpid ($listenner_pid, WNOHANG)) == -1 ) {
 	print $LOG $process_name . " stopped successfully\n";
 	print $DEB $process_name . " stopped successfully\n";
 }
+
+close($server);
