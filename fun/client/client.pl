@@ -12,13 +12,13 @@ my $socket = IO::Socket::INET->new(
 	Type => SOCK_STREAM)
 or die "Can`t connect to localhost: $@ $/";
 
-print $socket "END\n";
-my @answer = <$socket>;
+say "trying...";
 
-close(STDOUT);
-open (STDOUT, '>', "/dev/null") or die "Can't open STDOUT";
+print $socket pack("S", 2) . "\n";
+my $answer = <$socket>;
 
-say "Args: ", join " ", @ARGV;
-print @answer;
+use DDP;
+p $answer;
+
 say "\nEnd of Answer...";
 
