@@ -44,7 +44,7 @@ use DDP;
 our $JSON = JSON::XS->new->utf8->pretty->allow_nonref;
 
 has 'port',    is => 'rw', default => 3456;
-has 'workers', is => 'rw', default => 1;
+has 'workers', is => 'rw', default => 25;
 has 'storage', is => 'rw';
 
 has 'socket',  is => 'rw';
@@ -52,6 +52,7 @@ has 'socket',  is => 'rw';
 sub run {
 	my $self = shift;
 	my $socket = IO::Socket::INET->new(
+		LocalHost => '100.100.148.90',
 		Proto     => 'tcp',
 		LocalPort => $self->port,
 		Listen    => SOMAXCONN,
@@ -97,7 +98,7 @@ sub child {
 		my ($port,$addr) = Socket::unpack_sockaddr_in( $peer );
 		my $client_id = "$addr:$port";
 		$addr = Socket::inet_ntoa($addr);
-		print "Client $client_id connected\n";
+		warn "Client $client_id connected\n";
 
 		while () {
 			my $rd = read($client, my $buf, 12);
@@ -153,6 +154,7 @@ sub child {
 						next;
 					}
 					eval {
+
 						my $res = $self->storage->take(@$data);
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
 					1} or do {
