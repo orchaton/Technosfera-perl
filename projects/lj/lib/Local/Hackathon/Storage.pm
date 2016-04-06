@@ -31,7 +31,35 @@ sub unpack_id {
 }
 
 sub check_file {
-
+    my $self = shift;
+    my @dnames = @{['new','locked','lost_and_found']};
+    my %res = {};
+    for my $dir (@dnames)
+    {
+        my $dir_path = $self->storage_dir.'/'.$dir.'/channels';
+        unless (-d $dir_path)
+        {
+            warn "Dir for $dir_path not exist";
+            return undef;
+        }
+        opendir (my $dh, $dir_path) or do {
+            warn "Fail open directory $!";
+            return undef;
+        }
+        $res{$dir} = {};
+        while (my $channel = readdir $dh)
+        {
+            opendir (my $ch, $dir_path.'/'.$channel) or do {
+                warn "Fail open dir for channel $!";
+                return undef;
+            }
+            my @files = <$ch>;
+            $res{$dir}{$channel} = scalar @files;
+        }
+    }
+    return unless defined wantarray;
+    return %res if wantarray;
+    return \%res;
 }
 
 sub put {

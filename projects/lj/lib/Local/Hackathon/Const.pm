@@ -49,6 +49,7 @@ BEGIN {
 		PKT_ACK     => 3,
 		PKT_RELEASE => 4,
 		PKT_REQUEUE => 5,
+        PKT_STAT    => 6,
 
 		MAXBUF      => 20*1024*1024,
 	);
