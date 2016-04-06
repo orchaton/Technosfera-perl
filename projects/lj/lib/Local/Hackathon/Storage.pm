@@ -32,7 +32,7 @@ sub unpack_id {
 
 sub check_file {
     my $self = shift;
-    my @dnames = @{['new','locked','lost_and_found']};
+    my @dnames = ('new','locked','lost_and_found');
     my %res = {};
     for my $dir (@dnames)
     {
@@ -41,18 +41,19 @@ sub check_file {
         {
             warn "Dir for $dir_path not exist";
             return undef;
-        }
-        opendir (my $dh, $dir_path) or do {
+        };
+		my $dh;
+        opendir ($dh, $dir_path) or do {
             warn "Fail open directory $!";
             return undef;
-        }
+        };
         $res{$dir} = {};
         while (my $channel = readdir $dh)
         {
             opendir (my $ch, $dir_path.'/'.$channel) or do {
                 warn "Fail open dir for channel $!";
                 return undef;
-            }
+            };
             my @files = <$ch>;
             $res{$dir}{$channel} = scalar @files;
         }

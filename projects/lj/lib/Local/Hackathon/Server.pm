@@ -26,7 +26,7 @@ has 'socket',  is => 'rw';
 sub run {
 	my $self = shift;
 	my $socket = IO::Socket::INET->new(
-		LocalHost => '100.100.148.90',
+		LocalHost => 'localhost',
 		Proto     => 'tcp',
 		LocalPort => $self->port,
 		Listen    => SOMAXCONN,
@@ -54,6 +54,21 @@ sub run {
 	warn "Ready to work at :$self->{port}\n";
 
 	waitpid $_,0 for @pids;
+}
+
+sub process {
+	my ($self, $data, $func_ref) = @_;
+	p $data;
+	if (ref $data ne 'ARRAY') {
+		syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
+		next;
+	}
+	eval {
+		my $res = ${ &$func_ref(@$data) };
+		syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
+	1} or do {
+		syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
+	};
 }
 
 sub child {
@@ -109,17 +124,18 @@ sub child {
 
 			given( $pkt ) {
 				when (PKT_PUT) {
-					p $data;
-					if (ref $data ne 'ARRAY') {
-						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
-						next;
-					}
-					eval {
-						my $res = $self->storage->put(@$data);
-						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
-					1} or do {
-						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
-					};
+					process($self, $data, \$self->storage->put());
+					# p $data;
+					# if (ref $data ne 'ARRAY') {
+					# 	syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
+					# 	next;
+					# }
+					# eval {
+					# 	my $res = $self->storage->put(@$data);
+					# 	syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
+					# 1} or do {
+					# 	syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
+					# };
 				}
 				when (PKT_TAKE) {
 					p $data;
@@ -175,6 +191,7 @@ sub child {
 					};
 				}
 				when (PKT_STAT) {
+					process($data, \$self->storage->check_file());
 					p $data;
 					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
