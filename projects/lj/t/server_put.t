@@ -9,5 +9,5 @@ use DDP;
 
 my $c = Local::Hackathon::Client->new;
 
-my $res = $c->request(PKT_PUT, [ 'fetch', { URL => 'https://mail.ru' } ]);
+my $res = $c->request(PKT_PUT, [ 'fetch', { URL => 'localhost' } ]);
 p $res;

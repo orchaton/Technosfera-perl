@@ -1,28 +1,28 @@
-package Local::Hackathon::FakeStorage;
+# package Local::Hackathon::FakeStorage;
 
-use Mouse;
-use JSON::XS;
-use Digest::MD5 qw(md5_hex);
+# use Mouse;
+# use JSON::XS;
+# use Digest::MD5 qw(md5_hex);
 
-has 'storage', is => 'ro', default => sub {+{}};
+# has 'storage', is => 'ro', default => sub {+{}};
 
-our $JSON = JSON::XS->new->utf8->pretty->allow_nonref;
+# our $JSON = JSON::XS->new->utf8->pretty->allow_nonref;
 
-sub put {
-	my $self = shift;
-	my $chan = shift;
-	my $ref = shift;
-	my $data = $JSON->encode($ref);
-	my $id = md5_hex $data;
+# sub put {
+# 	my $self = shift;
+# 	my $chan = shift;
+# 	my $ref = shift;
+# 	my $data = $JSON->encode($ref);
+# 	my $id = md5_hex $data;
 
-	if (exists $self->{storage}{$chan}{$id}) {
-		return "Task already exists";
-	}
-	else {
-		$self->{storage}{$chan}{$id} = $data;
-		return { id => $id };
-	}
-}
+# 	if (exists $self->{storage}{$chan}{$id}) {
+# 		return "Task already exists";
+# 	}
+# 	else {
+# 		$self->{storage}{$chan}{$id} = $data;
+# 		return { id => $id };
+# 	}
+# }
 
 package Local::Hackathon::Server;
 
@@ -30,7 +30,9 @@ use 5.010;
 use strict;
 use warnings;
 
+no warnings 'experimental';
 use Local::Hackathon::Const;
+use Local::Hackathon::Storage;
 use Mouse;
 
 use Socket;
@@ -57,7 +59,7 @@ sub run {
 	) or die "Can't listen to @{[ $self->port ]}: $!\n";
 
 	$self->socket($socket);
-	$self->storage(Local::Hackathon::FakeStorage->new());
+	$self->storage(Local::Hackathon::Storage->new(storage_dir => $FindBin::Bin . '/../'));
 	my @pids;
 
 	$SIG{TERM} = $SIG{INT} = sub {
@@ -144,12 +146,63 @@ sub child {
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
 					};
 				}
+				when (PKT_TAKE) {
+					p $data;
+					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
+						next;
+					}
+					eval {
+						my $res = $self->storage->take(@$data);
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
+					1} or do {
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
+					};
+				}
+				when (PKT_ACK) {
+					p $data;
+					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
+						next;
+					}
+					eval {
+						my $res = $self->storage->ack(@$data);
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
+					1} or do {
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
+					};			
+				}
+				when (PKT_RELEASE) {
+					p $data;
+					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
+						next;
+					}
+					eval {
+						my $res = $self->storage->release(@$data);
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
+					1} or do {
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
+					};
+				}
+				when (PKT_REQUEUE) {
+					p $data;
+					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
+						next;
+					}
+					eval {
+						my $res = $self->storage->requeue(@$data);
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
+					1} or do {
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
+					};
+				}
 				default {
 					syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Not implemented packet type $PACKETS{$pkt}"));
 				}
 			}
 		}
-
 		close $client;
 	}
 }
