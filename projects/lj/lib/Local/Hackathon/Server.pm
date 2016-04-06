@@ -1,29 +1,3 @@
-# package Local::Hackathon::FakeStorage;
-
-# use Mouse;
-# use JSON::XS;
-# use Digest::MD5 qw(md5_hex);
-
-# has 'storage', is => 'ro', default => sub {+{}};
-
-# our $JSON = JSON::XS->new->utf8->pretty->allow_nonref;
-
-# sub put {
-# 	my $self = shift;
-# 	my $chan = shift;
-# 	my $ref = shift;
-# 	my $data = $JSON->encode($ref);
-# 	my $id = md5_hex $data;
-
-# 	if (exists $self->{storage}{$chan}{$id}) {
-# 		return "Task already exists";
-# 	}
-# 	else {
-# 		$self->{storage}{$chan}{$id} = $data;
-# 		return { id => $id };
-# 	}
-# }
-
 package Local::Hackathon::Server;
 
 use 5.010;
@@ -200,6 +174,19 @@ sub child {
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
 					};
 				}
+				when (PKT_STAT) {
+					p $data;
+					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
+						next;
+					}
+					eval {
+						my $res = $self->storage->check_file();
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
+					1} or do {
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
+					};
+				}	
 				default {
 					syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Not implemented packet type $PACKETS{$pkt}"));
 				}
