@@ -18,7 +18,7 @@ use DDP;
 our $JSON = JSON::XS->new->utf8->pretty->allow_nonref;
 
 has 'port',    is => 'rw', default => 3456;
-has 'workers', is => 'rw', default => 25;
+has 'workers', is => 'rw', default => 50;
 has 'storage', is => 'rw';
 
 has 'socket',  is => 'rw';
@@ -26,7 +26,7 @@ has 'socket',  is => 'rw';
 sub run {
 	my $self = shift;
 	my $socket = IO::Socket::INET->new(
-		LocalHost => 'localhost',
+		LocalHost => '100.100.148.90',
 		Proto     => 'tcp',
 		LocalPort => $self->port,
 		Listen    => SOMAXCONN,
@@ -54,21 +54,6 @@ sub run {
 	warn "Ready to work at :$self->{port}\n";
 
 	waitpid $_,0 for @pids;
-}
-
-sub process {
-	my ($self, $data, $func_ref) = @_;
-	p $data;
-	if (ref $data ne 'ARRAY') {
-		syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
-		next;
-	}
-	eval {
-		my $res = ${ &$func_ref(@$data) };
-		syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
-	1} or do {
-		syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
-	};
 }
 
 sub child {
@@ -124,27 +109,24 @@ sub child {
 
 			given( $pkt ) {
 				when (PKT_PUT) {
-					process($self, $data, \$self->storage->put());
-					# p $data;
-					# if (ref $data ne 'ARRAY') {
-					# 	syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
-					# 	next;
-					# }
-					# eval {
-					# 	my $res = $self->storage->put(@$data);
-					# 	syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
-					# 1} or do {
-					# 	syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
-					# };
-				}
-				when (PKT_TAKE) {
-					p $data;
 					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
 						next;
 					}
 					eval {
+						my $res = $self->storage->put(@$data);
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
+					1} or do {
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
+					};
 
+				}
+				when (PKT_TAKE) {
+					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
+						next;
+					}
+					eval {
 						my $res = $self->storage->take(@$data);
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
 					1} or do {
@@ -152,7 +134,6 @@ sub child {
 					};
 				}
 				when (PKT_ACK) {
-					p $data;
 					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
 						next;
@@ -165,7 +146,6 @@ sub child {
 					};			
 				}
 				when (PKT_RELEASE) {
-					p $data;
 					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
 						next;
@@ -178,7 +158,6 @@ sub child {
 					};
 				}
 				when (PKT_REQUEUE) {
-					p $data;
 					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
 						next;
@@ -191,8 +170,6 @@ sub child {
 					};
 				}
 				when (PKT_STAT) {
-					process($data, \$self->storage->check_file());
-					p $data;
 					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
 						next;
@@ -214,4 +191,3 @@ sub child {
 }
 
 1;
-
