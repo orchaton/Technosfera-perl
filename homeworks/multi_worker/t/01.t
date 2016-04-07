@@ -32,11 +32,11 @@ sub get_status {
 sleep(5);
 
 my $jobs = Local::App::GenCalc::get(1);
-is(scalar(@$jobs), 1, "local get");
+is(scalar(@$jobs), 1, "local get");                 # проверка кол-ва возвращаемых примеров GenCalc::get()
 $jobs = Local::App::ProcessCalc::get_from_server($server->port, 100);
-is(scalar(@$jobs), 100, "server get");
+is(scalar(@$jobs), 100, "server get");              # проверка кол-ва полученных значений ProccessCalc::get_from_server()
 my $ret = Local::App::ProcessCalc::multi_calc(10, $jobs, $server_calc->port);
-is(scalar(@$ret), scalar(@$jobs), "return values");
+is(scalar(@$ret), scalar(@$jobs), "return values"); # проверка совпадения кол-ва посчитанных и полученных примеров
 
 my $struct = get_status();
 
@@ -54,7 +54,7 @@ for (keys %$struct) {
     $max = max($max, $struct->{$_}->{cnt});
 }
 
-is($status, undef, "worker status");
-is($sum, scalar(@$jobs), "worker sum");
-is($cnt_worker, int((scalar(@$jobs)+9)/10), "worker cnt");
-is($max-$min, 0, "Diff jobs on worker");
+is($status, undef, "worker status");        # проверка файла-статуса
+is($sum, scalar(@$jobs), "worker sum");     # распарсер JSON-файла
+is($cnt_worker, int((scalar(@$jobs)+9)/10), "worker cnt"); # проверка количества работающих примеров
+is($max-$min, 0, "Diff jobs on worker");    # проверка Хуй_Знает_Чего

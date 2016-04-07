@@ -1,0 +1,85 @@
+Само ТЗ:
+  Необходимо написать 3 сервера.
+  ☐ @Сервер 1 # складывает примеры в отдельный файл.
+  ☐ @Сервер 1 # отвечает на запрос **get** примеров из файла.
+  ☐ @Сервер 2 # обрабатывает конечное количество потоков.
+  ☐ @Сервер 2 # распределяет нагрузку пула заданий равномерно по потокам.
+  ☐ @Сервер 2 # хранит свое состояние внутри файла-статуса
+  ☐ @Сервер 3 # сам параллелится как хочет.
+  ☐ @Сервер 3 # вычисляет примеры.
+
+
+Форматы ввода/вывода:
+  Сервер 1 (GenCalc.pm):
+    sub start_server:
+      Input:
+        ✔ **$port**                   @params @done (16-04-01 16:03)
+        ✔ **int [2 byte]**            @msgInput @done (16-04-01 16:03)
+      Ouput:
+        ☐ **ROWS_CNT ROWS**; **ROWS := ROW [ROW]**; **ROW := LEN MESS**; **LEN == int [4 byte]**      @msgOutput
+        ☐   return **undef**          @output
+    sub get:
+      Input:
+        ✔ **$limit**                  @params @done (16-04-01 16:03)
+        ✔   file: **'./calcs.txt'**   @done (16-04-01 16:03)
+      Output:
+        ✔   return **$arrayref**      @output @done (16-04-01 16:03)
+    sub new_one:
+      Input:
+        ☐ None
+      Output:
+        ☐   file: **./calcs.txt**
+
+  Сервер 2 (ProcessCalc.pm):
+    sub get_from_server:
+      Input:
+        ☐ **$port**                   @params
+        ☐ **$limit**                  @params # количество заданий. За ними сходить на @Сервер 1
+        ☐ @msgInput == @msgOutput
+      Ouput:
+        ☐ **int [2 byte]**            @msgOutput
+        ☐   return **$arrayref**      @output # массив заданий, полученный от @Сервер 1
+    sub multi_calc:
+      Input:
+        ☐ **$fork_cnt**               @params
+        ☐ **$jobs**                   @params # массив заданий, которые нужно решить
+        ☐ **$calc_port**              @params # порт @Сервер 3
+        ☐ **LEN [int 4 byte] MESS**   @msgInput @Сервер 3
+      Output:
+        ☐   File-status: {PID => {status => 'READY|PROCESS|DONE', cnt => $cnt}} @JSON
+        ☐ **LEN [int 4 byte] MESS**   @msgOutput @Сервер 3
+
+  Сервер 3 (Calc.pm):
+    sub start_server:
+      Input:
+        ☐ **$port**                   @params
+        ☐ **LEN [int 4 byte] MESS**   @msgInput @msgOutput
+      Output:
+        ☐ **LEN [int 4 byte] MESS**   @msgInput @msgOutput
+
+
+Сигналы:
+  Сервер 1 (GenCalc.pm):
+    ☐ {ALRM} = \& {sub new_one} TIMEOUT=100ms
+    ☐ {INT}  = \& {sub kill_me}
+  Сервер 2 (ProcessCalc.pm):
+    ☐ {INT}  = \& {sub kill_me} # and kill my sons
+  Сервер 3 (Calc.pm):
+    ☐ {ALRM} = \& {sub process_queue} TIMEOUT=1s
+    ☐ {INT}  = \& {sub kill_ne} # and kill my sons
+
+
+Документация:
+  Сервер 1 (GenCalc.pm):
+
+
+  Сервер 2 (ProcessCalc.pm):
+
+
+  Сервер 3 (Calc.pm):
+
+
+Pack/Unpack:
+  ☐ **Pattern:** **ROWS_CNT ROWS**; **ROW := ROW [ROW]**; **ROW := LEN MESS**; **LEN == int [4 byte]**
+  ☐ **Solution:**
+  ☐ **JSON:**

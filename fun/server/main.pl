@@ -22,6 +22,13 @@ $| = 1;
 
 use v5.018;
 
+$SIG{INT} = sub {
+	say "Me($$): I catch Interraption";
+	until (waitpid(-1, 0) == -1) {}
+	say "Me($$): Interrapted";
+	exit(0);
+};
+
 my $server = IO::Socket::INET->new(
     LocalPort  => 9000,
     Type       => SOCK_STREAM,
@@ -36,7 +43,7 @@ unless (-e -p 'storage.pipe') {
 	mkfifo('storage.pipe', 0700) or die "mkfifo: $!";
 }
 
-my $max_client = 50;
+my $max_client = defined $ARGV[0] ? $ARGV[0] : 50;
 
 my $glue = 'scalar_glue';
 my %options = (
@@ -67,3 +74,5 @@ until ( (my $res = waitpid ($listenner_pid, WNOHANG)) == -1 ) {
 	print $LOG $process_name . " stopped successfully\n";
 	print $DEB $process_name . " stopped successfully\n";
 }
+
+close($server);

@@ -63,7 +63,28 @@ sub wait_clients {
 	say "Mainframe($$): so now I'm dead\n";
 }
 
+sub interraption {
+	say "Mainframe($$): I catched interraption";
+
+	kill 'TERM', -$$;
+
+	until (waitpid(-1, 0) == -1) { }
+	exit(0); 
+}
+
+sub termination {
+	if ($$ == getpgrp) {
+		wait_clients;
+		exit;
+	}
+	exit;
+}
+
 sub mainframe {
+	setsid;
+	
+	$SIG{INT} = \&interraption;
+	$SIG{TERM} = \&termination;
 
 	my ($server, $client_queue_ref, $client_glue, $max_client, $LOG) = @_;
 
@@ -94,21 +115,25 @@ sub mainframe {
 
 			(tied $client_count)->shunlock;
 
-			# say "Mainframe($$): Push new client";
-
 			serve_client($server, pop @client_queue, $client_glue, $LOG);
 			inc_client_count();
 		}
 	}
 
 	wait_clients();
-	exit;
+	exit (0);
 }
 
 sub serve_client {
 	my ($server, $client, $client_glue, $LOG) = @_;
 	my $pid = fork();
 	unless ($pid) {
+
+		$SIG{TERM} = sub {
+			shutdown($client, 2);
+			close($client);
+			exit(0);
+		};
 		
 		tie $client_count, 'IPC::Shareable', $client_glue, { %options } or 
 			die "Mainframe($$)::tie died: $!";
@@ -145,6 +170,7 @@ sub serve_client {
 	
 		exit;
 	}
+	close($client);
 }
 
 1;

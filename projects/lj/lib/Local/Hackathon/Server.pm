@@ -133,7 +133,21 @@ sub child {
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
 					};
 				}
+				when (PKT_TAKE) {
+					p $data;
+					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
+						next;
+					}
+					eval {
+						my $res = $self->storage->take(@$data);
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
+					1} or do {
+						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
+					};
+				}
 				when (PKT_ACK) {
+					p $data;
 					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
 						next;
@@ -146,6 +160,7 @@ sub child {
 					};			
 				}
 				when (PKT_RELEASE) {
+					p $data;
 					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
 						next;
@@ -158,6 +173,7 @@ sub child {
 					};
 				}
 				when (PKT_REQUEUE) {
+					p $data;
 					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
 						next;
@@ -169,18 +185,7 @@ sub child {
 						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
 					};
 				}
-				when (PKT_STAT) {
-					if ( ref $data ne 'ARRAY' ) {	# if $data not SCALAR:
-						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Wrong arguments format"));
-						next;
-					}
-					eval {
-						my $res = $self->storage->check_file();
-						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode($res));
-					1} or do {
-						syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("$@"));
-					};
-				}	
+
 				default {
 					syswrite $client, pack ("VVV/a*", $pkt, $id, $JSON->encode("Not implemented packet type $PACKETS{$pkt}"));
 				}
