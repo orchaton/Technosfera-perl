@@ -16,9 +16,7 @@ Local::Iterator::Array - iterator of array
 
 =cut
 
-
 use Mouse;
-
 our $VERSION = '1.0';
 
 has 'array' => (
