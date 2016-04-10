@@ -75,21 +75,14 @@ sub next {
 sub all {
 	my ($self) = @_;
 
+
 	my @res;
+	while (1) {
+		my ($next, $end) = $self->next();
+		return \@res if ($end);
 
-	if ($self->last == -1) {
-		return undef;
+		push @res, $next;
 	}
-
-	my $fh = ${$self->fh};
-	seek($fh, $self->last, SEEK_SET);
-	
-	while (my $str = <$fh>) {
-		$str =~ s/\n//;
-		push @res, $str;
-	}
-
-	$self->last(-1);
 	return \@res;
 }
 

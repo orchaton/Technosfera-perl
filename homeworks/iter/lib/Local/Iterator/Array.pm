@@ -46,9 +46,13 @@ sub next {
 
 sub all {
     my ($self) = @_;
-    my @res = map { $self->array->[$_]  } $self->last .. scalar @{$self->array} - 1;
-    $self->last ( scalar @{$self->array} );
-    return \@res;
+    my @res;
+    while (1) {
+        my ($next, $end) = $self->next();
+        return \@res if ($end);
+
+        push @res, $next;
+    }
 }
 
 1;
