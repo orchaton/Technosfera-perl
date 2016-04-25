@@ -19,6 +19,7 @@ Local::Iterator::Aggregator - aggregator of iterator
 =cut
 
 use Mouse;
+use parent 'Local::Iterator';
 
 has 'iterator' => (
 	'is' => 'rw',
@@ -42,26 +43,12 @@ sub next {
 	my @res;
 	for (1..$self->chunk_length) {
 		my ($var, $flag) = $self->iterator->next();
-		
-		return (undef, 1) if ($flag and not defined $var and not @res);
-		return ( [ @res ], 1) if ($flag);
-		
+		last if ($flag == 1);
+
 		push @res, $var;
 	}
-	return ( [ @res ], 0);
-}
-
-sub all {
-	my ($self) = @_;
-
-	my @res;
-	while (1) {
-		my ($val, $flag) = $self->next();
-		last if ($flag and not defined $val);
-
-		push @res, $val;
-	}
-	return \@res;
+	return (\@res, 0) if @res;
+	return (undef, 1) unless (@res);
 }
 
 1;

@@ -21,6 +21,7 @@ Local::Iterator::File - file-based iterator
 =cut
 
 use Mouse;
+use parent 'Local::Iterator';
 
 our $VERSION = '1.0';
 
@@ -70,20 +71,6 @@ sub next {
 	}
 
 	return ($str, 0);
-}
-
-sub all {
-	my ($self) = @_;
-
-
-	my @res;
-	while (1) {
-		my ($next, $end) = $self->next();
-		return \@res if ($end);
-
-		push @res, $next;
-	}
-	return \@res;
 }
 
 1;

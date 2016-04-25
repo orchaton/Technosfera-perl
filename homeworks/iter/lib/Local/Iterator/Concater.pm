@@ -21,6 +21,7 @@ Local::Iterator::Concater - concater of other iterators
 =cut
 
 use Mouse;
+use parent 'Local::Iterator';
 
 has 'iterators' => (
 	'is' => 'rw',
@@ -67,18 +68,6 @@ sub next {
 
 	($next, $end) = $self->iter_cur->next();
 	return ($next, 0);
-}
-
-sub all {
-	my ($self) = @_;
-
-	my @res;
-	while (1) {
-		my ($next, $end) = $self->next();
-		return \@res if ($end);
-
-		push @res, $next;
-	}
 }
 
 1;
