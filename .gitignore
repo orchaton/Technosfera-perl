@@ -8,3 +8,6 @@ projects/lj/t/
 fun/Local/
 sandbox/
 index.html
+fun/*
+Makefile.old
+lectures/
